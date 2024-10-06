@@ -221,7 +221,7 @@ export default {
 
       console.log(data);
 
-      fetch("http://127.0.0.1:8000/save/", {
+      fetch("http://3.34.29.189:8000/save/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
