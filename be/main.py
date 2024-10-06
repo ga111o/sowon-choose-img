@@ -9,6 +9,8 @@ origins = [
     "http://localhost:8080",
     "https://ga111o.github.io/sowon-choose-img/",
     "https://ga111o.github.io/sowon-choose-img",
+    "http://3.34.29.189"
+    "http://3.34.29.189/"
 ]
 
 app.add_middleware(
