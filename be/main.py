@@ -5,17 +5,18 @@ import sqlite3
 
 app = FastAPI()
 
-# CORS 설정
 origins = [
-    "http://localhost:8080",  # 허용할 도메인
+    "http://localhost:8080",
+    "https://ga111o.github.io/sowon-choose-img/",
+    "https://ga111o.github.io/sowon-choose-img",
 ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],  # 모든 HTTP 메소드 허용
-    allow_headers=["*"],  # 모든 헤더 허용
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 DATABASE = './festival.db'
@@ -49,7 +50,6 @@ class Score(BaseModel):
     isCorrect: bool
 
 
-# 초기화
 init_db()
 
 
