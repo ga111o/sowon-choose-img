@@ -241,6 +241,7 @@ export default {
         this.feedbackMessage = "";
         this.loadImages();
       } else {
+        this.fetchScore(this.phone, this.age, this.gender);
         alert("축하드려요! " + this.score);
         this.resetGame();
       }
@@ -283,6 +284,29 @@ export default {
       console.log(data);
 
       fetch("http://localhost:8000/save/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data);
+        })
+        .catch((error) => {
+          console.error("server error:", error);
+        });
+    },
+
+    fetchScore(phone, age, gender) {
+      const data = {
+        phone: phone,
+        age: parseInt(age, 10),
+        gender: gender,
+      };
+
+      fetch("http://localhost:8000/fetch_score/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
