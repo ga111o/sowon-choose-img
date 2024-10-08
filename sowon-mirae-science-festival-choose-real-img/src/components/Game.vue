@@ -74,12 +74,28 @@
               보통
             </label>
             <label class="difficulty-label">
-              <input type="radio" value="여자" v-model="difficulty" required />
+              <input type="radio" value="hard" v-model="difficulty" required />
               어려움
             </label>
           </div>
           <button type="submit">게임 시작</button>
         </form>
+      </div>
+
+      <div v-else-if="is_end" class="game_end">
+        <h3>게임 결과</h3>
+        <p>맞춘 갯수: {{ score }} 개</p>
+        <p>총 소요 시간: {{ totalTime }} 초</p>
+        <p v-if="difficulty === 'hard'">{{ rank }} 등</p>
+
+        <div class="rank-box" v-if="difficulty === 'hard'">
+          <h3 class="rank-title">랭크</h3>
+          <p v-for="(entry, index) in top10" :key="index" class="rank">
+            {{ entry.phone }}: {{ entry.total_correct }} 점
+          </p>
+        </div>
+
+        <button @click="resetGame" class="restart-button">재시작</button>
       </div>
 
       <div v-else class="box">
@@ -124,6 +140,10 @@ export default {
       startTime: null,
       elapsedTime: 0,
       difficulty: "easy",
+      is_end: 0,
+      rank: 0,
+      totalTime: 0,
+      top10: [],
     };
   },
   methods: {
@@ -218,7 +238,8 @@ export default {
           selectedRealImage,
           selectedGeneratedImage,
           this.elapsedTime,
-          true
+          true,
+          this.difficulty
         );
       } else {
         this.feedbackMessage = "오답...";
@@ -226,7 +247,8 @@ export default {
           selectedRealImage,
           selectedGeneratedImage,
           this.elapsedTime,
-          false
+          false,
+          this.difficulty
         );
       }
 
@@ -241,10 +263,12 @@ export default {
         this.feedbackMessage = "";
         this.loadImages();
       } else {
-        this.fetchScore(this.phone, this.age, this.gender);
-        alert("축하드려요! " + this.score);
-        this.resetGame();
+        this.fetchScore(this.phone, this.age, this.gender, this.difficulty);
+        this.endGame();
       }
+    },
+    endGame() {
+      this.is_end = 1;
     },
 
     resetGame() {
@@ -264,11 +288,18 @@ export default {
       this.imageClickable = true;
       this.startTime = null;
       this.elapsedTime = 0;
+      this.is_end = 0;
+      this.rank = 0;
+      this.totalTime = 0;
+      this.top10 = [];
+      this.difficulty = "easy";
     },
 
-    submitScore(realImage, generatedImage, elapsedTime, isCorrect) {
+    submitScore(realImage, generatedImage, elapsedTime, isCorrect, difficulty) {
       const realImageName = realImage.split("/").pop();
       const generatedImageName = generatedImage.split("/").pop();
+
+      console.log(difficulty);
 
       const data = {
         age: this.age,
@@ -279,6 +310,7 @@ export default {
         generatedImage: generatedImageName,
         elapsedTime: elapsedTime,
         isCorrect: isCorrect,
+        difficulty: difficulty,
       };
 
       console.log(data);
@@ -299,11 +331,12 @@ export default {
         });
     },
 
-    fetchScore(phone, age, gender) {
+    fetchScore(phone, age, gender, difficulty) {
       const data = {
         phone: phone,
         age: parseInt(age, 10),
         gender: gender,
+        difficulty: difficulty,
       };
 
       fetch("http://localhost:8000/fetch_score/", {
@@ -316,6 +349,12 @@ export default {
         .then((response) => response.json())
         .then((data) => {
           console.log(data);
+          this.rank = data.rank;
+          this.totalTime = data.total_time;
+          this.top10 = data.top_10.map((entry) => ({
+            phone: entry.phone.slice(-4), // 뒤 4자리만 표시
+            total_correct: entry.total_correct,
+          }));
         })
         .catch((error) => {
           console.error("server error:", error);
@@ -381,6 +420,7 @@ body {
   padding: 20px;
 }
 
+.game_end,
 form {
   background-color: #fff;
   border-radius: 8px;
@@ -484,5 +524,15 @@ input[type="radio"] {
 
 .difficulty-label {
   margin: 30px 0 20px 0;
+}
+
+.rank-box {
+  margin-bottom: 20px;
+}
+.rank {
+  margin: 3px 0;
+}
+.rank-title {
+  margin-bottom: 0;
 }
 </style>

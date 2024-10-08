@@ -51,6 +51,7 @@ class Score(BaseModel):
     generatedImage: str
     elapsedTime: float
     isCorrect: bool
+    difficulty: str
 
 
 init_db()
@@ -62,37 +63,69 @@ async def save_score(score: Score):
         with sqlite3.connect(DATABASE) as conn:
             cursor = conn.cursor()
             cursor.execute('''
-                INSERT INTO scores (age, gender, phone, score, real_image, generated_image, elapsedTime, is_correct)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (score.age, score.gender, score.phone, score.score, score.realImage, score.generatedImage, score.elapsedTime, score.isCorrect))
+                INSERT INTO scores (age, gender, phone, score, real_image, generated_image, elapsedTime, is_correct, difficulty)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (score.age, score.gender, score.phone, score.score, score.realImage, score.generatedImage, score.elapsedTime, score.isCorrect, score.difficulty))
             conn.commit()
             return {"message": "Score saved successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-class Score(BaseModel):
+class fetchScore(BaseModel):
     age: int
     gender: str
     phone: str
+    difficulty: str
 
 
 @app.post("/fetch_score/")
-async def fetch_score(score: Score):
+async def fetch_score(fetchScore: fetchScore):
     try:
         with sqlite3.connect(DATABASE) as conn:
             cursor = conn.cursor()
+
+            # 자신의 점수를 가져오는 쿼리
             cursor.execute('''
                 SELECT SUM(is_correct) AS total_correct, SUM(elapsedTime) AS total_time
                 FROM scores
-                WHERE age = ? AND gender = ? AND phone = ?
-            ''', (score.age, score.gender, score.phone))
+                WHERE age = ? AND gender = ? AND phone = ? AND difficulty = ?
+            ''', (fetchScore.age, fetchScore.gender, fetchScore.phone, fetchScore.difficulty))
             result = cursor.fetchone()
             total_correct = result[0] if result[0] is not None else 0
             total_time = result[1] if result[1] is not None else 0
+
+            # 자신의 점수로 순위를 매기기 위한 쿼리
+            cursor.execute('''
+                SELECT COUNT(*) FROM (
+                    SELECT SUM(is_correct) AS total_correct
+                    FROM scores
+                    WHERE age = ? AND gender = ? AND difficulty = ?
+                    GROUP BY phone
+                    HAVING total_correct > ?
+                )
+            ''', (fetchScore.age, fetchScore.gender, fetchScore.difficulty, total_correct))
+            rank = cursor.fetchone()[0] + 1  # 순위는 1부터 시작
+
+            # 상위 10명의 점수를 가져오는 쿼리
+            cursor.execute('''
+                SELECT phone, SUM(is_correct) AS total_correct
+                FROM scores
+                WHERE difficulty = ?
+                GROUP BY phone
+                ORDER BY total_correct DESC
+                LIMIT 10
+            ''', (fetchScore.difficulty,))
+            top_scores = cursor.fetchall()
+
+            top_10 = [{"phone": phone, "total_correct": total}
+                      for phone, total in top_scores]
+
             return {
                 "total_correct": total_correct,
-                "total_time": total_time
+                "total_time": total_time,
+                "rank": rank,
+                "top_10": top_10
             }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
