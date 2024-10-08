@@ -315,7 +315,7 @@ export default {
 
       console.log(data);
 
-      fetch("http://localhost:8000/save/", {
+      fetch("http://3.34.29.189:8000/save/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -339,7 +339,7 @@ export default {
         difficulty: difficulty,
       };
 
-      fetch("http://localhost:8000/fetch_score/", {
+      fetch("http://3.34.29.189:8000/fetch_score/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
