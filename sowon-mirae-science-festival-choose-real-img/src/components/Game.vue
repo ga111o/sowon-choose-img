@@ -3,24 +3,50 @@
     <div>
       <div v-if="!submitted">
         <form @submit.prevent="startGame">
-          <select v-model="age" required>
-            <option value="" disabled selected>나이 선택</option>
-            <option
-              v-for="year in Array.from({ length: 30 }, (v, k) => k)"
-              :key="year + 1"
-              :value="year + 1"
-            >
-              {{ year + 1 }}살
-            </option>
-          </select>
+          <div
+            style="
+              display: flex;
+              justify-content: space-around;
+              margin-bottom: 20px;
+            "
+          >
+            <select v-model="age" required>
+              <option value="" disabled selected>나이 선택</option>
+              <option
+                v-for="year in Array.from({ length: 30 }, (v, k) => k)"
+                :key="year + 1"
+                :value="year + 1"
+              >
+                {{ year + 1 }}살
+              </option>
+            </select>
 
-          <select v-model="gender" required>
-            <option value="" disabled selected>성별 선택</option>
-            <option value="남자">남자</option>
-            <option value="여자">여자</option>
-          </select>
+            <div class="gender-label-box">
+              <label class="gender-label">
+                <input type="radio" value="남자" v-model="gender" required />
+                남자
+              </label>
+              <label class="gender-label">
+                <input type="radio" value="여자" v-model="gender" required />
+                여자
+              </label>
+            </div>
+          </div>
 
-          <input v-model="phone" placeholder="전화번호" required />
+          <div>
+            전화번호:
+            <input
+              v-model="phonePart1"
+              required
+              minlength="3"
+              maxlength="3"
+              value="010"
+            />
+            -
+            <input v-model="phonePart2" required minlength="4" maxlength="4" />
+            -
+            <input v-model="phonePart3" required minlength="4" maxlength="4" />
+          </div>
 
           <div>
             <label>
@@ -41,6 +67,17 @@
             </label>
           </div>
 
+          <div class="difficulty-label-box">
+            <label class="difficulty-label"> 난이도:</label>
+            <label class="difficulty-label">
+              <input type="radio" value="easy" v-model="difficulty" required />
+              보통
+            </label>
+            <label class="difficulty-label">
+              <input type="radio" value="여자" v-model="difficulty" required />
+              어려움
+            </label>
+          </div>
           <button type="submit">게임 시작</button>
         </form>
       </div>
@@ -72,7 +109,9 @@ export default {
     return {
       age: "",
       gender: "",
-      phone: "",
+      phonePart1: "010",
+      phonePart2: "",
+      phonePart3: "",
       images: [],
       feedbackMessage: "",
       score: 0,
@@ -82,10 +121,14 @@ export default {
       showNextButton: false,
       usedImages: [],
       imageClickable: true,
+      startTime: null,
+      elapsedTime: 0,
+      difficulty: "easy",
     };
   },
   methods: {
     startGame() {
+      this.phone = `${this.phonePart1}-${this.phonePart2}-${this.phonePart3}`;
       this.submitted = true;
       this.currentStage = 0;
       this.usedImages = [];
@@ -115,13 +158,11 @@ export default {
       let selectedRealImages, selectedOtherImages;
 
       do {
-        if (this.currentStage < 5) {
-          selectedRealImages = this.getRandomImages(realImages, 1);
-          selectedOtherImages = this.getRandomImages(easyImages, 1);
-        } else {
-          selectedRealImages = this.getRandomImages(realImages, 1);
-          selectedOtherImages = this.getRandomImages(hardImages, 1);
-        }
+        selectedRealImages = this.getRandomImages(realImages, 1);
+        selectedOtherImages = this.getRandomImages(
+          this.difficulty === "easy" ? easyImages : hardImages,
+          1
+        );
       } while (
         this.usedImages.includes(selectedRealImages[0]) ||
         this.usedImages.includes(selectedOtherImages[0])
@@ -134,6 +175,8 @@ export default {
       } else {
         this.images = [...selectedRealImages, ...selectedOtherImages];
       }
+
+      this.startTime = Date.now();
 
       this.usedImages.push(...this.images);
       this.showNextButton = false;
@@ -166,14 +209,25 @@ export default {
       const isRealImage =
         (isEvenScore && image === selectedGeneratedImage) ||
         (!isEvenScore && image === selectedRealImage);
+      this.elapsedTime = ((Date.now() - this.startTime) / 1000).toFixed(3);
 
       if (isRealImage) {
         this.score++;
         this.feedbackMessage = "정답입니다!";
-        this.submitScore(selectedRealImage, selectedGeneratedImage, true);
+        this.submitScore(
+          selectedRealImage,
+          selectedGeneratedImage,
+          this.elapsedTime,
+          true
+        );
       } else {
         this.feedbackMessage = "오답...";
-        this.submitScore(selectedRealImage, selectedGeneratedImage, false);
+        this.submitScore(
+          selectedRealImage,
+          selectedGeneratedImage,
+          this.elapsedTime,
+          false
+        );
       }
 
       this.showNextButton = true;
@@ -195,17 +249,23 @@ export default {
     resetGame() {
       this.age = "";
       this.gender = "";
-      this.phone = "";
+      this.phonePart1 = "010";
+      this.phonePart2 = "";
+      this.phonePart3 = "";
       this.images = [];
       this.feedbackMessage = "";
       this.score = 0;
       this.submitted = false;
       this.currentStage = 0;
+      this.maxStages = 6;
       this.showNextButton = false;
       this.usedImages = [];
+      this.imageClickable = true;
+      this.startTime = null;
+      this.elapsedTime = 0;
     },
 
-    submitScore(realImage, generatedImage, isCorrect) {
+    submitScore(realImage, generatedImage, elapsedTime, isCorrect) {
       const realImageName = realImage.split("/").pop();
       const generatedImageName = generatedImage.split("/").pop();
 
@@ -216,12 +276,13 @@ export default {
         score: this.score,
         realImage: realImageName,
         generatedImage: generatedImageName,
+        elapsedTime: elapsedTime,
         isCorrect: isCorrect,
       };
 
       console.log(data);
 
-      fetch("http://3.34.29.189:8000/save/", {
+      fetch("http://localhost:8000/save/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -254,19 +315,19 @@ export default {
 .images {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px; /* 이미지 간 간격 */
+  gap: 10px;
   justify-content: space-around;
 }
 
 .image-item {
   cursor: pointer;
-  border: 2px solid #ccc; /* 이미지 테두리 */
+  border: 2px solid #ccc;
   border-radius: 5px;
-  transition: transform 0.2s; /* 호버 시 애니메이션 효과 */
+  transition: transform 0.2s;
 }
 
 .image-item:hover {
-  transform: scale(1.05); /* 호버 시 이미지 확대 */
+  transform: scale(1.05);
 }
 
 .score {
@@ -276,12 +337,12 @@ export default {
 }
 
 .next-button {
-  background-color: #8a1601; /* 버튼 배경 색상 */
-  color: white; /* 버튼 텍스트 색상 */
-  padding: 10px 20px; /* 버튼 패딩 */
-  border: none; /* 버튼 테두리 제거 */
-  border-radius: 5px; /* 버튼 모서리 둥글게 */
-  cursor: pointer; /* 커서 포인터 */
+  background-color: #8a1601;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
   transition: 0.3s;
 }
 
@@ -308,14 +369,14 @@ form {
 select {
   width: 40%;
   padding: 10px;
-  margin: 0 5px 15px 5px;
+  margin: 0 5px;
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 16px;
 }
 
 input {
-  width: 80%;
+  width: 15%;
   padding: 10px;
   margin-bottom: 15px;
   border: 1px solid #ccc;
@@ -371,6 +432,33 @@ summary {
 }
 
 input[type="checkbox"] {
-  margin-right: 5px;
+  margin: 10px 5px 10px 0;
+}
+
+input[type="radio"] {
+  width: 30px;
+  margin: 0;
+}
+
+.gender-label-box {
+  display: flex;
+  align-items: center;
+  font-size: 18px;
+}
+
+.gender-label {
+  margin: 0 15px 0 0;
+}
+
+.difficulty-label-box {
+  display: flex;
+  width: 300px;
+  align-items: center;
+  justify-content: space-evenly;
+  font-size: 18px;
+}
+
+.difficulty-label {
+  margin: 30px 0 20px 0;
 }
 </style>

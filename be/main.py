@@ -49,6 +49,7 @@ class Score(BaseModel):
     score: int
     realImage: str
     generatedImage: str
+    elapsedTime: float
     isCorrect: bool
 
 
@@ -61,9 +62,9 @@ async def save_score(score: Score):
         with sqlite3.connect(DATABASE) as conn:
             cursor = conn.cursor()
             cursor.execute('''
-                INSERT INTO scores (age, gender, phone, score, real_image, generated_image, is_correct)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ''', (score.age, score.gender, score.phone, score.score, score.realImage, score.generatedImage, score.isCorrect))
+                INSERT INTO scores (age, gender, phone, score, real_image, generated_image, elapsedTime, is_correct)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (score.age, score.gender, score.phone, score.score, score.realImage, score.generatedImage, score.elapsedTime, score.isCorrect))
             conn.commit()
             return {"message": "Score saved successfully"}
     except Exception as e:
