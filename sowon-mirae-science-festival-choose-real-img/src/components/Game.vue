@@ -374,6 +374,7 @@ export default {
           this.top10 = data.top_10.map((entry) => ({
             phone: entry.phone.slice(-4), // 뒤 4자리만 표시
             total_correct: entry.total_correct,
+            total_time: entry.total_time,
           }));
         })
         .catch((error) => {
