@@ -100,6 +100,7 @@
 
       <div v-else class="box">
         <div v-if="feedbackMessage" class="feedback">{{ feedbackMessage }}</div>
+        <div v-else><p>진짜 사진을 골라주세요!</p></div>
         <div class="images">
           <img
             v-for="(image, index) in images"
@@ -133,7 +134,7 @@ export default {
       score: 0,
       submitted: false,
       currentStage: 0,
-      maxStages: 6,
+      maxStages: 3,
       showNextButton: false,
       usedImages: [],
       imageClickable: true,
@@ -155,11 +156,23 @@ export default {
       this.loadImages();
     },
     loadImages() {
-      const realImages = this.loadImagesFromFolder(
-        require.context("@/assets/images/real", false, /\.(png|jpe?g|gif)$/)
+      const realEasyImages = this.loadImagesFromFolder(
+        require.context(
+          "@/assets/images/real/easy",
+          false,
+          /\.(png|jpe?g|gif)$/
+        )
       );
 
-      const easyImages = this.loadImagesFromFolder(
+      const realHardImages = this.loadImagesFromFolder(
+        require.context(
+          "@/assets/images/real/hard",
+          false,
+          /\.(png|jpe?g|gif)$/
+        )
+      );
+
+      const generatedEasyImages = this.loadImagesFromFolder(
         require.context(
           "@/assets/images/generated/easy",
           false,
@@ -167,7 +180,7 @@ export default {
         )
       );
 
-      const hardImages = this.loadImagesFromFolder(
+      const generatedHardImages = this.loadImagesFromFolder(
         require.context(
           "@/assets/images/generated/hard",
           false,
@@ -178,9 +191,14 @@ export default {
       let selectedRealImages, selectedOtherImages;
 
       do {
-        selectedRealImages = this.getRandomImages(realImages, 1);
+        selectedRealImages = this.getRandomImages(
+          this.difficulty === "easy" ? realEasyImages : realHardImages,
+          1
+        );
         selectedOtherImages = this.getRandomImages(
-          this.difficulty === "easy" ? easyImages : hardImages,
+          this.difficulty === "easy"
+            ? generatedEasyImages
+            : generatedHardImages,
           1
         );
       } while (
@@ -387,6 +405,7 @@ export default {
   border: 2px solid #ccc;
   border-radius: 5px;
   transition: transform 0.2s;
+  width: 300px;
 }
 
 .image-item:hover {
