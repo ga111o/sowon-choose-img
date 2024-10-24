@@ -91,7 +91,9 @@
         <div class="rank-box" v-if="difficulty === 'hard'">
           <h3 class="rank-title">랭크</h3>
           <p v-for="(entry, index) in top10" :key="index" class="rank">
-            {{ entry.phone }}: {{ entry.total_correct }} 점
+            {{ entry.phone }}: {{ entry.total_correct }} 점 ({{
+              entry.total_time
+            }})초
           </p>
         </div>
 

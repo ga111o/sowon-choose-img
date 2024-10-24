@@ -86,7 +86,6 @@ async def fetch_score(fetchScore: fetchScore):
         with sqlite3.connect(DATABASE) as conn:
             cursor = conn.cursor()
 
-            # 자신의 점수를 가져오는 쿼리
             cursor.execute('''
                 SELECT SUM(is_correct) AS total_correct, SUM(elapsedTime) AS total_time
                 FROM scores
@@ -96,7 +95,6 @@ async def fetch_score(fetchScore: fetchScore):
             total_correct = result[0] if result[0] is not None else 0
             total_time = result[1] if result[1] is not None else 0
 
-            # 자신의 점수로 순위를 매기기 위한 쿼리
             cursor.execute('''
                 SELECT COUNT(*) FROM (
                     SELECT SUM(is_correct) AS total_correct
@@ -106,21 +104,20 @@ async def fetch_score(fetchScore: fetchScore):
                     HAVING total_correct > ?
                 )
             ''', (fetchScore.age, fetchScore.gender, fetchScore.difficulty, total_correct))
-            rank = cursor.fetchone()[0] + 1  # 순위는 1부터 시작
+            rank = cursor.fetchone()[0] + 1
 
-            # 상위 10명의 점수를 가져오는 쿼리
             cursor.execute('''
-                SELECT phone, SUM(is_correct) AS total_correct
+                SELECT phone, SUM(is_correct) AS total_correct, SUM(elapsedTime) AS total_time
                 FROM scores
                 WHERE difficulty = ?
                 GROUP BY phone
-                ORDER BY total_correct DESC
+                ORDER BY total_correct DESC, total_time ASC
                 LIMIT 10
             ''', (fetchScore.difficulty,))
             top_scores = cursor.fetchall()
 
-            top_10 = [{"phone": phone, "total_correct": total}
-                      for phone, total in top_scores]
+            top_10 = [{"phone": phone, "total_correct": total, "total_time": total_time}
+                      for phone, total, total_time in top_scores]
 
             return {
                 "total_correct": total_correct,
