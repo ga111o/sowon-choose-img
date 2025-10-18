@@ -6,6 +6,6 @@ module.exports = defineConfig({
     process.env.NODE_ENV === "production" ? "/sowon-choose-img/" : "/",
   devServer: {
     host: true,
-    allowedHosts: ['festival2.ga111o.com']
+    allowedHosts: "0.0.0.0" 
   }
 });
