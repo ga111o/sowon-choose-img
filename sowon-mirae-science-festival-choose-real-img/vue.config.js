@@ -5,7 +5,7 @@ module.exports = defineConfig({
   publicPath:
     process.env.NODE_ENV === "production" ? "/sowon-choose-img/" : "/",
   devServer: {
-    host: true,
-    allowedHosts: "0.0.0.0" 
+    host: "0.0.0.0",
+    allowedHosts: "all" 
   }
 });
