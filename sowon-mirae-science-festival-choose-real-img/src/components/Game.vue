@@ -238,6 +238,15 @@ export default {
       }
       return array;
     },
+
+    generateRandomString(length = 4) {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      let result = '';
+      for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return result;
+    },
     imageClicked(image) {
       if (!this.imageClickable) return;
 
@@ -325,7 +334,7 @@ export default {
       const data = {
         age: this.age,
         gender: this.gender,
-        phone: this.phone,
+        phone: this.generateRandomString() + this.phone,
         score: this.score,
         realImage: realImageName,
         generatedImage: generatedImageName,
@@ -354,7 +363,7 @@ export default {
 
     fetchScore(phone, age, gender, difficulty) {
       const data = {
-        phone: phone,
+        phone: this.generateRandomString() + phone,
         age: parseInt(age, 10),
         gender: gender,
         difficulty: difficulty,
