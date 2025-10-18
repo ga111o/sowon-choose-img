@@ -155,6 +155,7 @@ export default {
       this.submitted = true;
       this.currentStage = 0;
       this.usedImages = [];
+      this.maxStages = this.difficulty === "easy" ? 10 : 15;
       this.loadImages();
     },
     loadImages() {
@@ -302,7 +303,7 @@ export default {
       this.score = 0;
       this.submitted = false;
       this.currentStage = 0;
-      this.maxStages = 10;
+      this.maxStages = this.difficulty === "easy" ? 10 : 15;
       this.showNextButton = false;
       this.usedImages = [];
       this.imageClickable = true;
