@@ -136,7 +136,7 @@ export default {
       score: 0,
       submitted: false,
       currentStage: 0,
-      maxStages: 3,
+      maxStages: 10,
       showNextButton: false,
       usedImages: [],
       imageClickable: true,
@@ -302,7 +302,7 @@ export default {
       this.score = 0;
       this.submitted = false;
       this.currentStage = 0;
-      this.maxStages = 6;
+      this.maxStages = 10;
       this.showNextButton = false;
       this.usedImages = [];
       this.imageClickable = true;
