@@ -156,6 +156,7 @@ export default {
       this.currentStage = 0;
       this.usedImages = [];
       this.maxStages = this.difficulty === "easy" ? 10 : 15;
+      this.gameStartTime = Date.now();
       this.loadImages();
     },
     loadImages() {
@@ -293,6 +294,7 @@ export default {
         this.feedbackMessage = "";
         this.loadImages();
       } else {
+        this.totalTime = ((Date.now() - this.gameStartTime) / 1000).toFixed(3);
         this.fetchScore(this.phone, this.age, this.gender, this.difficulty);
         this.endGame();
       }
@@ -317,6 +319,7 @@ export default {
       this.usedImages = [];
       this.imageClickable = true;
       this.startTime = null;
+      this.gameStartTime = null;
       this.elapsedTime = 0;
       this.is_end = 0;
       this.rank = 0;
