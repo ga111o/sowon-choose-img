@@ -383,7 +383,7 @@ export default {
         .then((data) => {
           console.log(data);
           this.rank = data.rank;
-          this.totalTime = data.total_time;
+          // this.totalTime = data.total_time;
           this.top10 = data.top_10.map((entry) => ({
             phone: entry.phone.slice(-4), // 뒤 4자리만 표시
             total_correct: entry.total_correct,
