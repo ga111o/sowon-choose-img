@@ -335,7 +335,7 @@ export default {
 
       console.log(data);
 
-      fetch("http://3.34.29.189:8000/save/", {
+      fetch("https://festival2.ga111o.com:8000/save/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -359,7 +359,7 @@ export default {
         difficulty: difficulty,
       };
 
-      fetch("http://3.34.29.189:8000/fetch_score/", {
+      fetch("https://festival2.ga111o.com:8000/fetch_score/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

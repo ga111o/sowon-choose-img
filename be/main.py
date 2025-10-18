@@ -5,14 +5,7 @@ import sqlite3
 
 app = FastAPI()
 
-origins = [
-    "http://localhost:8080",
-    "http://localhost:8080/",
-    "https://ga111o.github.io/sowon-choose-img/",
-    "https://ga111o.github.io/sowon-choose-img",
-    "http://3.34.29.189"
-    "http://3.34.29.189/"
-]
+origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -130,4 +123,4 @@ async def fetch_score(fetchScore: fetchScore):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=18000)
